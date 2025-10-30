@@ -9,12 +9,13 @@
   <Project Path="UnityEditor.UI.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.csproj" />
   <Project Path="Unity.VisualScripting.Core.csproj" />
-  <Project Path="Unity.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Unity.Mathematics.csproj" />
+  <Project Path="Unity.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Cinemachine.csproj" />
   <Project Path="Unity.VisualScripting.Core.Editor.csproj" />
   <Project Path="Unity.VisualScripting.Flow.Editor.csproj" />
   <Project Path="UnityEditor.TestRunner.csproj" />
+  <Project Path="NaughtyAttributes.Editor.csproj" />
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
   <Project Path="UnityEngine.TestRunner.csproj" />
   <Project Path="Unity.Searcher.Editor.csproj" />
@@ -23,7 +24,10 @@
   <Project Path="Unity.VisualStudio.Editor.csproj" />
   <Project Path="com.unity.cinemachine.editor.csproj" />
   <Project Path="PPv2URPConverters.csproj" />
+  <Project Path="NaughtyAttributes.Core.csproj" />
+  <Project Path="NaughtyAttributes.Test.csproj" />
   <Project Path="Unity.VisualScripting.State.Editor.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.VisualScripting.State.csproj" />
@@ -33,7 +37,6 @@
   <Project Path="Unity.RenderPipelines.Universal.2D.Internal.csproj" />
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
   <Project Path="Unity.Mathematics.Editor.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Config.Runtime.csproj" />
