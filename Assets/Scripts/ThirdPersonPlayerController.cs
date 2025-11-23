@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
-public class PlayerController : MonoBehaviour
+public class ThirdPersonPlayerController : MonoBehaviour
 {
     private InputSystem_Actions _playerInput;
     private Rigidbody _rb;
@@ -14,6 +16,9 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] private float _moveSpeed = 8f;
     [SerializeField] private float _rotationSpeed = 15f;
+    [Header("Carry Movement Feel Settings")]
+    private float _speedModifier = 1f;
+    private Transform _lookTarget = null;
 
     private Vector2 _inputVector;
     private bool _isMoving;
@@ -55,6 +60,11 @@ public class PlayerController : MonoBehaviour
         MovePlayer();
         RotatePlayer();
     }
+    public void SetMovementState(float penalty, Transform lookTarget)
+    {
+        _speedModifier = Mathf.Clamp01(1f - penalty);
+        _lookTarget = lookTarget;
+    }
 
     private void MovePlayer()
     {
@@ -64,7 +74,7 @@ public class PlayerController : MonoBehaviour
         
         // Terapkan kecepatan langsung
         // mengambil Velocity Y yang lama (Gravitasi) agar karakter tidak melayang
-        Vector3 targetVelocity = targetDirection * _moveSpeed;
+        Vector3 targetVelocity = targetDirection * _moveSpeed * _speedModifier;
         targetVelocity.y = _rb.velocity.y; 
 
         // Set velocity Rigidbody
@@ -73,17 +83,39 @@ public class PlayerController : MonoBehaviour
 
     private void RotatePlayer()
     {
-        if (_isMoving)
+        if (_lookTarget != null)
+        {
+            Vector3 directionToObj = _lookTarget.position - transform.position;
+            directionToObj.y = 0;
+
+            if(directionToObj.sqrMagnitude > 0.001f)
+            {
+                float angleDifference = Vector3.Angle(transform.forward, directionToObj);
+                
+                bool shouldRotate = (_isMoving || angleDifference > 30f) && angleDifference > 5f;
+
+                if(shouldRotate)
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(directionToObj);    
+                    float smoothSpeed = _rotationSpeed * 0.5f;
+                    _rb.MoveRotation(Quaternion.Slerp(_rb.rotation, targetRotation, smoothSpeed * Time.fixedDeltaTime));
+                }
+            }
+        }
+        else if (_isMoving)
         {
             // Arah tujuan hadap
             Vector3 direction = new Vector3(_inputVector.x, 0f, _inputVector.y).normalized;
             
-            // Hitung rotasi target
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            
-            // Gunakan MoveRotation untuk memutar Rigidbody secara fisik
-            Quaternion nextRotation = Quaternion.Slerp(_rb.rotation, targetRotation, _rotationSpeed * Time.fixedDeltaTime);
-            _rb.MoveRotation(nextRotation);
+            if(direction.sqrMagnitude > 0.001f)
+            {
+                // Hitung rotasi target
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                
+                // Gunakan MoveRotation untuk memutar Rigidbody secara fisik
+                Quaternion nextRotation = Quaternion.Slerp(_rb.rotation, targetRotation, _rotationSpeed * Time.fixedDeltaTime);
+                _rb.MoveRotation(nextRotation);
+            }
         }
     }
 

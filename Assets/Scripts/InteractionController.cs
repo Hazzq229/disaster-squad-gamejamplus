@@ -2,6 +2,7 @@ using UnityEngine;
 using NaughtyAttributes;
 using HInteractions;
 using System;
+using HGame.Objects;
 
 namespace HPlayer
 {
@@ -25,6 +26,7 @@ namespace HPlayer
         [field: Header("Input")]
         [field: SerializeField, ReadOnly] public bool Interacting { get; private set; } = false;
 
+        [SerializeField] private ThirdPersonPlayerController playerController;
         public event Action OnInteractionStart;
         public event Action OnInteractionEnd;
 
@@ -37,6 +39,7 @@ namespace HPlayer
         private void Awake()
         {
             playerRb = GetComponentInParent<Rigidbody>();
+            if(!playerController) playerController = GetComponent<ThirdPersonPlayerController>();
         }
 
         private void OnEnable()
@@ -146,33 +149,42 @@ namespace HPlayer
         private void PickUpObject(Liftable obj)
         {
             if (obj == null) return;
+            if (!obj.CanBePickedUp()) return;
 
             HeldObject = obj;
             currentCandidate = null;
             
-            // Panggil method interface Liftable (ganti layer, dll)
+            // prepare liftable object
             obj.PickUp(this, heldObjectLayer);
 
-            // --- SETUP PHYSICS JOINT ---
-            // Kita pasang joint di PLAYER, lalu sambungkan ke OBJEK
+            // calculate anchor point
+            Vector3 finalAnchorPos = obj.GetGrabPoint(handTransform.position);
+
+            // Physics joint setup
             grabJoint = gameObject.AddComponent<SpringJoint>();
             grabJoint.autoConfigureConnectedAnchor = false;
             
-            // Anchor di player (posisi tangan relative terhadap player)
+            // hand's anchor
             grabJoint.anchor = transform.InverseTransformPoint(handTransform.position);
             
-            // Anchor di objek (pusat objek)
-            grabJoint.connectedAnchor = Vector3.zero;
-            
+            // object's anchor
+            grabJoint.connectedAnchor = obj.transform.InverseTransformPoint(finalAnchorPos);
             grabJoint.connectedBody = obj.Rigidbody;
 
-            // Setup Kekuatan Pegas
+            // tuning joint behavior
             grabJoint.spring = jointSpring;
             grabJoint.damper = jointDamper;
+            grabJoint.enableCollision = false;
             
-            // Biar objek gak muter liar saat ditarik
-            obj.Rigidbody.angularDrag = 5f; 
-            obj.Rigidbody.drag = 2f;
+            // configure joint distance
+            grabJoint.maxDistance = 0f;
+            grabJoint.minDistance = 0f;
+            grabJoint.tolerance = 0.025f;
+
+            float penalty = obj.SpeedPenalty;
+            Transform targetLook = obj.ForceFaceObject ? obj.transform : null;
+
+            playerController.SetMovementState(penalty, targetLook);
         }
 
         private void DropObject(Liftable obj, bool throwObject = false)
@@ -185,10 +197,6 @@ namespace HPlayer
                 Destroy(grabJoint);
             }
 
-            // Kembalikan drag normal (biar pas jatuh dia gelinding normal)
-            obj.Rigidbody.angularDrag = 0.05f; 
-            obj.Rigidbody.drag = 0f;
-
             // Fitur Lempar (Momentum)
             if (throwObject && playerRb)
             {
@@ -197,8 +205,10 @@ namespace HPlayer
                 obj.Rigidbody.velocity = throwVec;
             }
 
+            playerController.SetMovementState(0f, null);
+
             HeldObject = null;
-            obj.Drop();
+            obj.Drop(this);
         }
 
         #endregion
