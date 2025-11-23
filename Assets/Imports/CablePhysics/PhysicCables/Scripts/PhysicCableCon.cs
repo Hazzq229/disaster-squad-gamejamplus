@@ -24,20 +24,20 @@ namespace HPhysic
                 _connector.Disconnect();
         }
 
-        public override void Drop()
-        {
-            if (ObjectHolder.SelectedObject && ObjectHolder.SelectedObject.TryGetComponent(out Connector secondConnector))
-            {
-                if (_connector.CanConnect(secondConnector))
-                    secondConnector.Connect(_connector);
-                else if (!secondConnector.IsConnected)
-                {
-                    transform.rotation = secondConnector.ConnectionRotation * _connector.RotationOffset;
-                    transform.position = (secondConnector.ConnectionPosition + secondConnector.ConnectedOutOffset * 0.2f) - (_connector.ConnectionPosition - _connector.transform.position);
-                }
-            }
+        // public override void Drop(IObjectHolder holder)
+        // {
+        //     if (ObjectHolder.SelectedObject && ObjectHolder.SelectedObject.TryGetComponent(out Connector secondConnector))
+        //     {
+        //         if (_connector.CanConnect(secondConnector))
+        //             secondConnector.Connect(_connector);
+        //         else if (!secondConnector.IsConnected)
+        //         {
+        //             transform.rotation = secondConnector.ConnectionRotation * _connector.RotationOffset;
+        //             transform.position = (secondConnector.ConnectionPosition + secondConnector.ConnectedOutOffset * 0.2f) - (_connector.ConnectionPosition - _connector.transform.position);
+        //         }
+        //     }
 
-            base.Drop();
-        }
+        //     base.Drop();
+        // }
     }
 }

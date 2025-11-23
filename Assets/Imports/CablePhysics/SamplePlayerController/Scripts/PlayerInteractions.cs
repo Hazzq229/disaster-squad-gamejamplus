@@ -137,7 +137,7 @@ namespace HPlayer
             }
 
             HeldObject = null;
-            obj.Drop();
+            obj.Drop(this);
         }
 
         private void CheckHeldObjectOnTeleport()
